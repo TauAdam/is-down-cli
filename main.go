@@ -1,4 +1,4 @@
-package is_down_cli
+package main
 
 import (
 	"fmt"
@@ -22,12 +22,12 @@ func main() {
 				Name:     "port",
 				Usage:    "port number",
 				Aliases:  []string{"p"},
-				Required: true,
+				Required: false,
 			},
 		},
 		Action: func(c *cli.Context) error {
 			port := c.String("port")
-			if port == "" {
+			if len(port) == 0 {
 				port = "8080"
 			}
 			status := Ping(c.String("domain"), port)
