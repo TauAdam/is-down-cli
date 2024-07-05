@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func Ping(domain, port, protocol string, timeout time.Duration, verbose bool) string {
+func Ping(domain, port, protocol string, timeout time.Duration, verbose bool) {
 	address := domain + ":" + port
 	conn, err := net.DialTimeout(protocol, address, timeout)
 	var status string
@@ -28,7 +28,8 @@ func Ping(domain, port, protocol string, timeout time.Duration, verbose bool) st
 		log.Println("Port:", port)
 		log.Println("Protocol:", protocol)
 		log.Println("Timeout:", timeout)
+		log.Println("Status:", status)
+	} else {
+		log.Println(status)
 	}
-	log.Println(status)
-	return status
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -10,7 +9,7 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "is_down_cli",
+		Name:  "Check whether resource down or not",
 		Usage: "download cli tool",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -21,7 +20,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:        "port",
-				Usage:       "port number",
+				Usage:       "set port number",
 				Aliases:     []string{"p"},
 				DefaultText: "80",
 			},
@@ -37,7 +36,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:  "protocol",
-				Usage: "set protocol (tcp, udp, icmp)",
+				Usage: "set protocol (tcp, udp)",
 				Value: "tcp",
 			},
 			&cli.BoolFlag{
@@ -50,8 +49,28 @@ func main() {
 				Usage: "set interval for repeat mode",
 				Value: 1 * time.Minute,
 			},
+			&cli.StringFlag{
+				Name:        "log",
+				Usage:       "set log file",
+				Value:       "log.log",
+				Aliases:     []string{"l"},
+				DefaultText: "log.log",
+			},
 		},
 		Action: func(c *cli.Context) error {
+			logFile := c.String("log")
+			f, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			if err != nil {
+				return err
+			}
+			defer func(f *os.File) {
+				err := f.Close()
+				if err != nil {
+
+				}
+			}(f)
+			log.SetOutput(f)
+
 			domain := c.String("domain")
 			port := c.String("port")
 			if len(port) == 0 {
@@ -64,8 +83,7 @@ func main() {
 			interval := c.Duration("interval")
 
 			for {
-				status := Ping(domain, port, protocol, timeout, verbose)
-				fmt.Println(status)
+				Ping(domain, port, protocol, timeout, verbose)
 				if !repeat {
 					break
 				}
