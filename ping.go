@@ -7,9 +7,17 @@ import (
 	"time"
 )
 
-func Ping(domain, port, protocol string, timeout time.Duration, verbose bool) {
-	address := domain + ":" + port
-	conn, err := net.DialTimeout(protocol, address, timeout)
+type Config struct {
+	Domain   string
+	Port     string
+	Protocol string
+	Timeout  time.Duration
+	Verbose  bool
+}
+
+func Ping(config Config) {
+	address := fmt.Sprintf("%s:%s", config.Domain, config.Port)
+	conn, err := net.DialTimeout(config.Protocol, address, config.Timeout)
 	var status string
 	if err != nil {
 		status = fmt.Sprintf("DOWN  %v %v", err, address)
@@ -22,13 +30,13 @@ func Ping(domain, port, protocol string, timeout time.Duration, verbose bool) {
 			}
 		}(conn)
 	}
-	if verbose {
+	if config.Verbose {
 		log.Println("Verbose mode enabled")
-		log.Println("Domain:", domain)
-		log.Println("Port:", port)
-		log.Println("Protocol:", protocol)
-		log.Println("Timeout:", timeout)
-		log.Println("Status:", status)
+		log.Printf("Domain: %s\n", config.Domain)
+		log.Printf("Port: %s\n", config.Port)
+		log.Printf("Protocol: %s\n", config.Protocol)
+		log.Printf("Timeout: %v\n", config.Timeout)
+		log.Printf("Status: %s\n", status)
 	} else {
 		log.Println(status)
 	}

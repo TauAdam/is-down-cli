@@ -1,20 +1,29 @@
 package main
 
 import (
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/urfave/cli/v2"
+)
+
+const (
+	defaultPort    = "80"
+	defaultTimeout = 5 * time.Second
 )
 
 func main() {
 	app := &cli.App{
-		Name:  "Check whether resource down or not",
-		Usage: "download cli tool",
+		EnableBashCompletion: true,
+		Suggest:              true,
+		Name:                 "Check whether resource down or not",
+		Usage:                "download cli tool",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "domain",
-				Usage:    "Specify domain name",
+				Name:     "domains",
+				Usage:    "Specify multiple domain names (comma-separated)",
 				Aliases:  []string{"d"},
 				Required: true,
 			},
@@ -22,7 +31,7 @@ func main() {
 				Name:        "port",
 				Usage:       "set port number",
 				Aliases:     []string{"p"},
-				DefaultText: "80",
+				DefaultText: defaultPort,
 			},
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -32,7 +41,7 @@ func main() {
 			&cli.DurationFlag{
 				Name:  "timeout",
 				Usage: "set timeout value",
-				Value: 5 * time.Second,
+				Value: defaultTimeout,
 			},
 			&cli.StringFlag{
 				Name:  "protocol",
@@ -66,16 +75,17 @@ func main() {
 			defer func(f *os.File) {
 				err := f.Close()
 				if err != nil {
-
+					log.Fatal(err)
 				}
 			}(f)
 			log.SetOutput(f)
 
-			domain := c.String("domain")
+			domains := strings.Split(c.String("domains"), ",")
 			port := c.String("port")
 			if len(port) == 0 {
-				port = "80"
+				port = defaultPort
 			}
+
 			verbose := c.Bool("verbose")
 			timeout := c.Duration("timeout")
 			protocol := c.String("protocol")
@@ -83,7 +93,16 @@ func main() {
 			interval := c.Duration("interval")
 
 			for {
-				Ping(domain, port, protocol, timeout, verbose)
+				for _, domain := range domains {
+					config := Config{
+						Domain:   domain,
+						Port:     port,
+						Protocol: protocol,
+						Timeout:  timeout,
+						Verbose:  verbose,
+					}
+					Ping(config)
+				}
 				if !repeat {
 					break
 				}
